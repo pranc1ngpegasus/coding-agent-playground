@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package api.v1;
+
+option go_package = "github.com/pranc1ngpegasus/coding-agent-playground/pkg/proto/api/v1;apiv1";
+
+service GreetService {
+  rpc Greet(GreetRequest) returns (GreetResponse) {}
+}
+
+message GreetRequest {
+  string name = 1;
+}
+
+message GreetResponse {
+  string message = 1;
+}

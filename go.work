@@ -1,0 +1,7 @@
+go 1.23
+
+use (
+	./cmd/server
+	./pkg/proto
+	./pkg/service
+)
