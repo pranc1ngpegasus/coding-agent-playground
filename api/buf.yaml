@@ -1,0 +1,10 @@
+version: v1
+name: buf.build/example/multimodule
+modules:
+  - path: proto
+lint:
+  use:
+    - DEFAULT
+breaking:
+  use:
+    - FILE
