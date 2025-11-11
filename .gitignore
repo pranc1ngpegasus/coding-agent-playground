@@ -38,7 +38,3 @@ Thumbs.db
 dist/
 bin/
 /cmd/server/server
-
-# Generated protobuf code
-pkg/proto/api/**/*.pb.go
-pkg/proto/api/**/*connect/*.connect.go

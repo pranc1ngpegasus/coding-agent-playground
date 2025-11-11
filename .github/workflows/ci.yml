@@ -23,15 +23,6 @@ jobs:
           go-version: stable
           cache: false
 
-      - name: Install buf
-        run: |
-          go install github.com/bufbuild/buf/cmd/buf@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-
-      - name: Generate protobuf code
-        working-directory: pkg/proto
-        run: buf generate
-
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
@@ -53,15 +44,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{ matrix.go-version }}
-
-      - name: Install buf
-        run: |
-          go install github.com/bufbuild/buf/cmd/buf@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-
-      - name: Generate protobuf code
-        working-directory: pkg/proto
-        run: buf generate
 
       - name: Run tests in cmd/server
         working-directory: cmd/server
@@ -89,15 +71,6 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: stable
-
-      - name: Install buf
-        run: |
-          go install github.com/bufbuild/buf/cmd/buf@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-
-      - name: Generate protobuf code
-        working-directory: pkg/proto
-        run: buf generate
 
       - name: Build server
         working-directory: cmd/server

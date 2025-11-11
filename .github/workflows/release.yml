@@ -23,15 +23,6 @@ jobs:
         with:
           go-version: stable
 
-      - name: Install buf
-        run: |
-          go install github.com/bufbuild/buf/cmd/buf@latest
-          echo "$HOME/go/bin" >> $GITHUB_PATH
-
-      - name: Generate protobuf code
-        working-directory: pkg/proto
-        run: buf generate
-
       - name: Build binaries
         run: |
           cd cmd/server
