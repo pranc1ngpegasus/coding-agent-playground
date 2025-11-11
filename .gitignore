@@ -37,4 +37,8 @@ Thumbs.db
 # Build output
 dist/
 bin/
-server
+/cmd/server/server
+
+# Generated protobuf code
+pkg/proto/api/**/*.pb.go
+pkg/proto/api/**/*connect/*.connect.go

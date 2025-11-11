@@ -97,12 +97,17 @@ func initHandler(logger *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
 
 	// Register Connect handlers with OpenTelemetry interceptor
-	interceptors := connect.WithInterceptors(
-		otelconnect.NewInterceptor(),
-	)
-
-	path, handler := serviceconnect.NewGreetServiceHandler(greetHandler, interceptors)
-	mux.Handle(path+"/", handler)
+	otelInterceptor, err := otelconnect.NewInterceptor()
+	if err != nil {
+		logger.Error("failed to create otel interceptor", slog.Any("error", err))
+		// Fall back to no interceptor
+		path, handler := serviceconnect.NewGreetServiceHandler(greetHandler)
+		mux.Handle(path+"/", handler)
+	} else {
+		interceptors := connect.WithInterceptors(otelInterceptor)
+		path, handler := serviceconnect.NewGreetServiceHandler(greetHandler, interceptors)
+		mux.Handle(path+"/", handler)
+	}
 
 	// Wrap with h2c for HTTP/2 without TLS
 	return h2c.NewHandler(mux, &http2.Server{})
