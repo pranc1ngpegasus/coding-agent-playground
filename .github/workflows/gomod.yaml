@@ -1,0 +1,75 @@
+name: gomod
+on:
+  pull_request:
+    paths:
+      - '**/*.go'
+      - '**/*.proto'
+      - '**/go.mod'
+      - '**/go.sum'
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}-gomod
+  cancel-in-progress: true
+env:
+  GOPRIVATE: github.com/pranc1ngpegasus/coding-agent-playground
+jobs:
+  setup:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      modules: ${{ steps.set-modules.outputs.modules }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - id: set-modules
+        run: |
+          modules=$(find . -name 'go.mod' -not -path '*/vendor/*' | sed 's|/go.mod||' | jq -R -s -c 'split("\n")[:-1]')
+          echo "modules=$modules" >> $GITHUB_OUTPUT
+
+  lint:
+    needs: setup
+    if: needs.setup.outputs.modules != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      checks: write
+      contents: read
+      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJson(needs.setup.outputs.modules) }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+          go-version-file: ${{ matrix.module }}/go.mod
+      - run: git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      - run: go fmt ./...
+        working-directory: ${{ matrix.module }}
+      - run: go vet ./...
+        working-directory: ${{ matrix.module }}
+
+  test:
+    needs: setup
+    if: needs.setup.outputs.modules != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        module: ${{ fromJson(needs.setup.outputs.modules) }}
+    steps:
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+      - uses: actions/setup-go@44694675825211faa026b3c33043df3e48a5fa00 # v6.0.0
+        with:
+          cache-dependency-path: ${{ matrix.module }}/go.sum
+          go-version-file: ${{ matrix.module }}/go.mod
+      - run: git config --global url."https://${{ secrets.GITHUB_TOKEN }}@github.com/".insteadOf "https://github.com/"
+      - run: go test ./... -coverprofile=coverage.out
+        working-directory: ${{ matrix.module }}
