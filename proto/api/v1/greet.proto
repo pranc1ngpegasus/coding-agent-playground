@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+package api.v1;
+
+option go_package = "github.com/pranc1ngpegasus/coding-agent-playground/proto/api/v1";
+
+message GreetRequest {
+  string name = 1;
+}
+
+message GreetResponse {
+  string message = 1;
+}
