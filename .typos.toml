@@ -1,4 +1,2 @@
 [files]
-extend-exclude = [
-    "**/go.*",
-]
+extend-exclude = ["**/go.*"]
