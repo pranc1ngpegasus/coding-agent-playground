@@ -1,0 +1,60 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: '1.23'
+
+      - name: Build binaries
+        run: |
+          cd cmd/server
+
+          # Linux amd64
+          GOOS=linux GOARCH=amd64 go build -o ../../dist/server-linux-amd64 .
+
+          # Linux arm64
+          GOOS=linux GOARCH=arm64 go build -o ../../dist/server-linux-arm64 .
+
+          # Darwin amd64
+          GOOS=darwin GOARCH=amd64 go build -o ../../dist/server-darwin-amd64 .
+
+          # Darwin arm64
+          GOOS=darwin GOARCH=arm64 go build -o ../../dist/server-darwin-arm64 .
+
+          # Windows amd64
+          GOOS=windows GOARCH=amd64 go build -o ../../dist/server-windows-amd64.exe .
+
+      - name: Create checksums
+        run: |
+          cd dist
+          sha256sum * > checksums.txt
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/server-*
+            dist/checksums.txt
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
