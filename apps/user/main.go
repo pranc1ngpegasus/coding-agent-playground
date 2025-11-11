@@ -38,13 +38,25 @@ func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()
 
-	app, err := inject(env.logLevel)
+	app, err := inject(ctx, env.logLevel)
 	if err != nil {
 		panic(err)
 	}
+	defer func() {
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := app.tracerProvider.Shutdown(shutdownCtx); err != nil {
+			app.logger.ErrorContext(shutdownCtx, "failed to shutdown tracer provider", slog.Any("err", err))
+		}
+	}()
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", app.healthHandler())
+	mux.HandleFunc("/example", app.exampleHandler())
 
 	srv := &http.Server{
-		Addr: ":" + env.port,
+		Addr:    ":" + env.port,
+		Handler: mux,
 	}
 
 	eg, egCtx := errgroup.WithContext(ctx)
