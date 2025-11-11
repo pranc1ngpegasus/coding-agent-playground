@@ -1,8 +1,6 @@
 module github.com/pranc1ngpegasus/coding-agent-playground/pkg/service
 
-go 1.24.0
-
-toolchain go1.24.7
+go 1.23
 
 require (
 	connectrpc.com/connect v1.19.1
